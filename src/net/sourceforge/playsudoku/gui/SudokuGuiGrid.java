@@ -5,6 +5,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
+import net.sourceforge.playsudoku.Cell;
 import net.sourceforge.playsudoku.GV;
 import net.sourceforge.playsudoku.SudokuGrid;
 import net.sourceforge.playsudoku.SudokuObserver;
@@ -29,6 +30,10 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
     private SudokuGuiCell lastCell;
     
     private Dimension dimCell;
+    
+    private int gridDimension;
+    
+    private int gridSize;
     
     private UndoRedoStack uRS;
 
@@ -92,8 +97,15 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
                 val = SudokuGrid.getPuzzleVal(sudokuRealGridval);
             }
             
-            g.drawString(val == 0 ? "" : ""+val, GV.FONT_BIG_H, GV.FONT_BIG_W);
-
+            if (gridDimension <= 9)
+            {
+            	g.drawString(val == -1 ? "" : ""+val, GV.FONT_BIG_H, GV.FONT_BIG_W);
+            }
+            else
+            {
+            	g.drawString(val == -1 ? "" : ""+String.format("%01X", (val)), GV.FONT_BIG_H, GV.FONT_BIG_W);
+            }
+            
             g.setFont(GV.FONT_S);
             
             g.drawString(noteToString(1, isDefault, sudokuRealGridval), GV.W1, GV.H1);
@@ -178,7 +190,7 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
             int i = SudokuMainFrame.getLastButton().getVal();
             int oldVal = sgrid.getRealGridVal(x,y);
             if(isSelectedRightMouseBut) {
-                if(i == 0)
+                if(i == -1)
                     sgrid.deleteAllNotes(x,y);
                 else sgrid.setNote(x,y,i);
             } else {
@@ -214,17 +226,16 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         }
         
         private void setBGColor(boolean reset) {
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i < gridDimension; i++) {
 
                 cells[this.x][i].setBackground((reset ? cells[this.x][i].bg : cells[this.x][i].bgSelected));
                 cells[i][this.y].setBackground((reset ? cells[i][this.y].bg : cells[i][this.y].bgSelected));
             }
 
-            int n = 3*(x/3)+(y/3);
+            int n = gridSize*(x/gridSize)+(y/gridSize);
             
-            //SELECT 3X3 SQUARE FOR X, Y
-            for (int i = 3*(n % 3); i <= 3*(n % 3)+2; i++) {
-                for (int j = 3*(n / 3); j <= 3*(n / 3)+2; j++) {
+            for (int i = gridSize*(n % gridSize); i < gridSize*((n % gridSize)+1); i++) {
+                for (int j = gridSize*(n / gridSize); j < gridSize*((n / gridSize)+1); j++) {
                     cells[j][i].setBackground((reset ? cells[j][i].bg : cells[j][i].bgSelected));
                 }
             }
@@ -236,17 +247,20 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         this.dimCell = new Dimension(52, 52);
         this.uRS = uRS;
         
-        setLayout(new GridLayout(9, 9));
-        cells = new SudokuGuiCell[9][9];
+        gridDimension = sgrid.getDimension();
+        gridSize = (int) Math.round(Math.sqrt(gridDimension));
+        
+        setLayout(new GridLayout(gridDimension, gridDimension));
+        cells = new SudokuGuiCell[gridDimension][gridDimension];
         sgrid.addObserver(this);
 
         boolean b1 = false;
         boolean b2 = false;
-        for(int i = 0; i < 9; i++) {
+        for(int i = 0; i < gridDimension; i++) {
            
-            b1 = (i / 3 == 1) ? true : false;
-            for(int j = 0; j < 9; j++) {
-                b2 = (j / 3 == 1) ? true : false;
+            b1 = ((i / gridSize) % 2 != 0) ? true : false;
+            for(int j = 0; j < gridDimension; j++) {
+                b2 = ((j / gridSize) % 2 != 0) ? true : false;
                 if(b1 && b2) {
                     cells[j][i] = new SudokuGuiCell(j, i, GV.GRID_COLOR_2, GV.GRID_COLOR_2_SELC, grid.getRealGridVal(j,i));
                 } else if(b1 && !b2) {
@@ -268,10 +282,10 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         } 
     }
 
-    public void updateCellChange(int cell) {
-        int xadr = SudokuGrid.getX(cell);
-        int yadr = SudokuGrid.getY(cell);
-        cells[xadr][yadr].setRealGridVal(sgrid.getRealGridVal(xadr,yadr));
+    public void updateCellChange(Cell cell) {
+        int xadr = cell.getX();
+        int yadr = cell.getY();
+        cells[xadr][yadr].setRealGridVal(cell.getValue());
         cells[xadr][yadr].repaint();
         //System.out.println("SudokuGuiGrid.updateCellChanged: x=" + xadr + ", y=" + yadr);
     }
