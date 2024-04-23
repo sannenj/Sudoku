@@ -5,7 +5,11 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
+import net.sourceforge.playsudoku.CommandHandler;
 import net.sourceforge.playsudoku.GV;
+import net.sourceforge.playsudoku.GenerateGridCommand;
+import net.sourceforge.playsudoku.NoteEntryCommand;
+import net.sourceforge.playsudoku.NumberEntryCommand;
 import net.sourceforge.playsudoku.SudokuGrid;
 import net.sourceforge.playsudoku.SudokuObserver;
 import net.sourceforge.playsudoku.UndoRedoStack;
@@ -22,6 +26,8 @@ import java.awt.event.MouseListener;
 
 public class SudokuGuiGrid extends JPanel implements SudokuObserver {
     
+	private CommandHandler commandHandler;
+	
     private SudokuGrid sgrid;
 
     private SudokuGuiCell[][] cells;
@@ -30,7 +36,7 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
     
     private Dimension dimCell;
     
-    private UndoRedoStack uRS;
+    //private UndoRedoStack uRS;
 
     private boolean helpingLines; //JV
     
@@ -175,17 +181,20 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         }
         
         private void doNumberEntry() {
-            int i = SudokuMainFrame.getLastButton().getVal();
-            int oldVal = sgrid.getRealGridVal(x,y);
-            if(isSelectedRightMouseBut) {
-                if(i == 0)
-                    sgrid.deleteAllNotes(x,y);
-                else sgrid.setNote(x,y,i);
-            } else {
-                sgrid.setPuzzleVal(x,y,i);
+            int val = SudokuMainFrame.getLastButton().getVal();
+ 
+            if (isSelectedRightMouseBut) 
+            {
+                commandHandler.doCommand(
+            		new NoteEntryCommand(sgrid, 
+            				               x, y, val));
             }
-            int newVal = sgrid.getRealGridVal(x,y);
-            uRS.push(oldVal, newVal);
+            else
+            {
+                commandHandler.doCommand(
+            		new NumberEntryCommand(sgrid, 
+            				               x, y, val));
+            }
         }
 
         public void focusGained(FocusEvent arg0) {
@@ -231,10 +240,11 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         }
     }
 
-    public SudokuGuiGrid (SudokuGrid grid, UndoRedoStack uRS) {
-        this.sgrid = grid;
+    public SudokuGuiGrid (SudokuGrid grid, CommandHandler cmdHandler) {
+        this.commandHandler = cmdHandler;
+    	this.sgrid = grid;
         this.dimCell = new Dimension(52, 52);
-        this.uRS = uRS;
+        //this.uRS = uRS;
         
         setLayout(new GridLayout(9, 9));
         cells = new SudokuGuiCell[9][9];

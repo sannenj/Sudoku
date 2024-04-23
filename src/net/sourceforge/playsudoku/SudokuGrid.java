@@ -53,6 +53,48 @@ public class SudokuGrid {
         this.r = new Random();
     }
 
+    public SudokuGrid (SudokuGrid another) {
+    	this.assign(another);
+    }
+    
+    public void assign (SudokuGrid another) {
+      
+        observers = new ArrayList<SudokuObserver>();
+       	observers.addAll(another.observers);
+        
+        hasChanged = another.hasChanged;
+        
+        vertical = new int[9];
+        for (int i = 0; i < 9; i++) {
+        	vertical[i] = another.vertical[i];
+        }        
+
+        horizontal = new int[9];
+        for (int i = 0; i < 9; i++) {
+        	horizontal[i] = another.horizontal[i];
+        }        
+
+        square = new int[9];
+        for (int i = 0; i < 9; i++) {
+        	square[i] = another.square[i];
+        }
+        
+        this.r = another.r;
+        
+        grid = new int[9][9];
+        for (int i = 0; i < 9; i++) 
+        {
+            for (int j = 0; j < 9; j++) 
+            {
+            	if (grid[j][i] != another.grid[j][i]) setChanged();
+                grid[j][i] = another.grid[j][i];
+                notifyObservers(grid[j][i]);
+            }
+        }        
+    }  
+    
+    
+    
     public int getRealGridVal(int x, int y) {
         if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
             throw new IllegalArgumentException("Invalid cell address.");
@@ -440,30 +482,6 @@ public class SudokuGrid {
         return result;
     }
     
-    protected GeneratorMove getFirstMove() {
-        return getNextMove(-1,0);
-    }
-    
-    protected GeneratorMove getNextMove(int x, int y) {
-        do { //No default Fields
-            if(x + 1 > 8) { //y mod 9;
-                if(y + 1 > 8) {
-                    return null;
-                }
-                x = 0;
-                y += 1;
-            } else {
-                x += 1;
-            }
-        } while(isDefault(x,y));
-
-        int[] moves = getAvailabeValuesField(x,y, false);
-        if(moves.length > 0) {
-            return new GeneratorMove(x,y,moves,0);
-        }
-        return null;
-    }
-
     //OBSERVERS MANEGMANT
     public void addObserver(SudokuObserver so) {
         observers.add(so);

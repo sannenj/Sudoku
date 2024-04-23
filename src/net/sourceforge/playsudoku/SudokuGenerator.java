@@ -27,10 +27,35 @@ public class SudokuGenerator {
         return this.grid;
     }
 
+    protected GeneratorMove getFirstMove() {
+        return getNextMove(-1,0);
+    }
+    
+    protected GeneratorMove getNextMove(int x, int y) {
+        do { //No default Fields
+            if(x + 1 > 8) { //y mod 9;
+                if(y + 1 > 8) {
+                    return null;
+                }
+                x = 0;
+                y += 1;
+            } else {
+                x += 1;
+            }
+        } while(grid.isDefault(x,y));
+
+        int[] moves = grid.getAvailabeValuesField(x,y, false);
+        if(moves.length > 0) {
+            return new GeneratorMove(x,y,moves,0);
+        }
+        return null;
+    }
+    
+    
     //RETURN BOOLEAN ??? TODO
     public boolean solveGrid() {
         st.clear();
-        GeneratorMove m = grid.getFirstMove();
+        GeneratorMove m = getFirstMove();
         if(m != null) {
             grid.setGridVal(m.getX(),m.getY(),m.getVal());
             st.push(m);
@@ -48,7 +73,7 @@ public class SudokuGenerator {
 
         while(!grid.isGridSolved()) {
 
-            GeneratorMove next = grid.getNextMove(x,y);
+            GeneratorMove next = getNextMove(x,y);
             if(next != null) {
                 grid.setGridVal(next.getX(),next.getY(),next.getVal());
                 st.push(next);
