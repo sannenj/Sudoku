@@ -25,7 +25,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+//import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -47,6 +47,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileFilter;
 
+import net.sourceforge.playsudoku.ACell;
 import net.sourceforge.playsudoku.CommandHandler;
 import net.sourceforge.playsudoku.GV;
 import net.sourceforge.playsudoku.GenerateGridCommand;
@@ -57,8 +58,8 @@ import net.sourceforge.playsudoku.SudokuObserver;
 //import net.sourceforge.playsudoku.UndoRedoStack;
 import net.sourceforge.playsudoku.GV.NumDistributuon;
 import net.sourceforge.playsudoku.GV.NumberEntry;
-import net.sourceforge.playsudoku.io.LoadSaver;
-import net.sourceforge.playsudoku.io.SerGrid;
+//import net.sourceforge.playsudoku.io.LoadSaver;
+//import net.sourceforge.playsudoku.io.SerGrid;
 
 
 public class SudokuMainFrame extends JFrame implements SudokuObserver {
@@ -634,7 +635,8 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void generateNewSud() {
-        {
+        boolean b = askSureQuestion("generate new Sudoku?");
+        if(b) {
             autoCheck = false;
             setDiffLabelVal(diff);
 
@@ -660,18 +662,10 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doUndo() {
-        //int cell = uRS.undo();
-        //if(cell != -1) {
-        //   sudGrid.setRealGridVal(cell); 
-        //}
     	cmdHandler.undo();
     }
     
     private void doRedo() {
-        //int cell = uRS.redo();
-        //if(cell != -1) {
-        //    sudGrid.setRealGridVal(cell);
-        //}
     	cmdHandler.redo();
     }
     
@@ -732,30 +726,30 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doSave() {      
-        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                SerGrid sg = sudGrid.getSerGrid();
-                File file = fc.getSelectedFile();
-                String aPath = file.getAbsolutePath();
-                if(!aPath.toLowerCase().endsWith(".ssud")) {
-                    aPath = aPath + ".ssud";
-                    file = new File(aPath);
-                }
-                LoadSaver.save(sg, file);
-                fc.setSelectedFile(file);
-                setGridChange(false);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, GV.ERROR_SAVE, "Error", 
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
+//        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+//            try {
+//                SerGrid sg = sudGrid.getSerGrid();
+//                File file = fc.getSelectedFile();
+//                String aPath = file.getAbsolutePath();
+//                if(!aPath.toLowerCase().endsWith(".ssud")) {
+//                    aPath = aPath + ".ssud";
+//                    file = new File(aPath);
+//                }
+//                LoadSaver.save(sg, file);
+//                fc.setSelectedFile(file);
+//                setGridChange(false);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                JOptionPane.showMessageDialog(this, GV.ERROR_SAVE, "Error", 
+//                        JOptionPane.ERROR_MESSAGE);
+//            }
+//        }
     }
     
     private boolean askSureQuestion(String sureFor) {
         if(hasTheGridBeenChanged) {
             StringBuffer sb = new StringBuffer();
-            sb.append("Do you really want to ");
+            sb.append("Do you realy what to ");
             sb.append(sureFor);
             sb.append("\nAll of your changes will be lost!");
             int result = JOptionPane.showConfirmDialog(this,
@@ -774,25 +768,25 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doLoad() {
-        boolean b = askSureQuestion("load a game?");
-        if(b) {
-            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    autoCheck = false;
-                    SerGrid sg = LoadSaver.load(fc.getSelectedFile().getAbsolutePath());
-                    sudGrid.setSerGrid(sg);
-                    setDiffLabelVal(sg.difficulty);
-                    autoCheck = true;
-                    cmdHandler.reset();
-                    setGridChange(false);
-                } catch (Exception e) {
-                    autoCheck = true;
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(this, GV.ERROR_LOAD, "Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }     
+//        boolean b = askSureQuestion("load a game?");
+//        if(b) {
+//            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+//                try {
+//                    autoCheck = false;
+//                    SerGrid sg = LoadSaver.load(fc.getSelectedFile().getAbsolutePath());
+//                    sudGrid.setSerGrid(sg);
+//                    setDiffLabelVal(sg.difficulty);
+//                    autoCheck = true;
+//                    cmdHandler.reset();
+//                    setGridChange(false);
+//                } catch (Exception e) {
+//                    autoCheck = true;
+//                    e.printStackTrace();
+//                    JOptionPane.showMessageDialog(this, GV.ERROR_LOAD, "Error", 
+//                            JOptionPane.ERROR_MESSAGE);
+//                }
+//            }
+//        }     
     }
     
     private void setGridToFinished() {
@@ -842,7 +836,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         return ne;
     }
     
-    public void updateCellChange(int cell) {
+    public void updateCellChange(ACell cell) {
         setGridChange(true);
         repaint();
         doCheck();

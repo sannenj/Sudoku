@@ -3,5 +3,5 @@ package net.sourceforge.playsudoku;
 
 public interface SudokuObserver {
 
-    public void updateCellChange(int cell);
+    public void updateCellChange(ACell cell);
 }

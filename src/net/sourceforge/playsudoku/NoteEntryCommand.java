@@ -5,7 +5,7 @@ public class NoteEntryCommand extends Command {
 	private int x;
 	private int y;
 	private int val;
-	private int oldval;
+	private ACell oldval;
 	private SudokuGrid sudGrid;
 	
 	public NoteEntryCommand(SudokuGrid grid, int x_, int y_, int val_)
@@ -13,13 +13,12 @@ public class NoteEntryCommand extends Command {
 		x = x_;
 		y = y_;
 		val = val_;
-		oldval = grid.getRealGridVal(x,y);
 		sudGrid = grid;
 	}
 	
 	@Override
 	public void reverseExecute() {
-		sudGrid.setRealGridVal(oldval);
+		sudGrid.setCell(oldval);
 	}
 
 	@Override
@@ -34,6 +33,13 @@ public class NoteEntryCommand extends Command {
 
 	@Override
 	public void execute() {
+		try {
+			oldval = sudGrid.getCell(x,y).clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		if (val == 0)
             sudGrid.deleteAllNotes(x, y);
         else sudGrid.setNote(x, y, val);

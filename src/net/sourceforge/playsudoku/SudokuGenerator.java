@@ -57,7 +57,7 @@ public class SudokuGenerator {
         st.clear();
         GeneratorMove m = getFirstMove();
         if(m != null) {
-            grid.setGridVal(m.getX(),m.getY(),m.getVal());
+            grid.setGridVal(m.getX(),m.getY(),m.getVal(), false);
             st.push(m);
             return solveGridIterative(m);
         }
@@ -75,7 +75,7 @@ public class SudokuGenerator {
 
             GeneratorMove next = getNextMove(x,y);
             if(next != null) {
-                grid.setGridVal(next.getX(),next.getY(),next.getVal());
+                grid.setGridVal(next.getX(),next.getY(),next.getVal(), false);
                 st.push(next);
                 y = next.getY();
                 x = next.getX();
@@ -83,10 +83,10 @@ public class SudokuGenerator {
                 try{
                     next = st.pop();
                     while(next.setNextMove() == false) {
-                        grid.setGridVal(next.getX(),next.getY(),0);
+                        grid.setGridVal(next.getX(),next.getY(),0, false);
                         next = st.pop(); 
                     }
-                    grid.setGridVal(next.getX(),next.getY(),next.getVal());
+                    grid.setGridVal(next.getX(),next.getY(),next.getVal(), false);
                     st.push(next);
                     y = next.getY();
                     x = next.getX();
@@ -135,8 +135,7 @@ public class SudokuGenerator {
             do {
                 val = random.nextInt(9);
             } while(b[val]);
-            grid.setGridVal(0,i,val+1);
-            grid.setDefault(0,i,true);
+            grid.setGridVal(0,i,val+1, true);
             b[val] = true;
         }
         b = null;
