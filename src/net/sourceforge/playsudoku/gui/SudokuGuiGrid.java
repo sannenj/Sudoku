@@ -37,7 +37,10 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
     
     private Dimension dimCell;
     
-    //private UndoRedoStack uRS;
+    private int gridDimension;
+    
+    private int gridSize;
+    
 
     private boolean helpingLines; //JV
     
@@ -99,8 +102,15 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
                 val = sudokuRealGridval.getPuzzleValue();
             }
             
-            g.drawString(val == 0 ? "" : ""+val, GV.FONT_BIG_H, GV.FONT_BIG_W);
-
+            if (gridDimension <= 9)
+            {
+            	g.drawString(val == -1 ? "" : ""+val, GV.FONT_BIG_H, GV.FONT_BIG_W);
+            }
+            else
+            {
+            	g.drawString(val == -1 ? "" : ""+String.format("%01X", (val)), GV.FONT_BIG_H, GV.FONT_BIG_W);
+            }
+            
             g.setFont(GV.FONT_S);
             
             g.drawString(noteToString(1, sudokuRealGridval), GV.W1, GV.H1);
@@ -225,17 +235,16 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         }
         
         private void setBGColor(boolean reset) {
-            for (int i = 0; i < 9; i++) {
+            for (int i = 0; i < gridDimension; i++) {
 
                 cells[this.x][i].setBackground((reset ? cells[this.x][i].bg : cells[this.x][i].bgSelected));
                 cells[i][this.y].setBackground((reset ? cells[i][this.y].bg : cells[i][this.y].bgSelected));
             }
 
-            int n = 3*(x/3)+(y/3);
+            int n = gridSize*(x/gridSize)+(y/gridSize);
             
-            //SELECT 3X3 SQUARE FOR X, Y
-            for (int i = 3*(n % 3); i <= 3*(n % 3)+2; i++) {
-                for (int j = 3*(n / 3); j <= 3*(n / 3)+2; j++) {
+            for (int i = gridSize*(n % gridSize); i < gridSize*((n % gridSize)+1); i++) {
+                for (int j = gridSize*(n / gridSize); j < gridSize*((n / gridSize)+1); j++) {
                     cells[j][i].setBackground((reset ? cells[j][i].bg : cells[j][i].bgSelected));
                 }
             }
@@ -248,17 +257,20 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
         this.dimCell = new Dimension(52, 52);
         //this.uRS = uRS;
         
-        setLayout(new GridLayout(9, 9));
-        cells = new SudokuGuiCell[9][9];
+        gridDimension = sgrid.getDimension();
+        gridSize = (int) Math.round(Math.sqrt(gridDimension));
+        
+        setLayout(new GridLayout(gridDimension, gridDimension));
+        cells = new SudokuGuiCell[gridDimension][gridDimension];
         sgrid.addObserver(this);
 
         boolean b1 = false;
         boolean b2 = false;
-        for(int i = 0; i < 9; i++) {
+        for(int i = 0; i < gridDimension; i++) {
            
-            b1 = (i / 3 == 1) ? true : false;
-            for(int j = 0; j < 9; j++) {
-                b2 = (j / 3 == 1) ? true : false;
+            b1 = ((i / gridSize) % 2 != 0) ? true : false;
+            for(int j = 0; j < gridDimension; j++) {
+                b2 = ((j / gridSize) % 2 != 0) ? true : false;
                 if(b1 && b2) {
                     cells[j][i] = new SudokuGuiCell(j, i, GV.GRID_COLOR_2, GV.GRID_COLOR_2_SELC, grid.getCell(j,i));
                 } else if(b1 && !b2) {

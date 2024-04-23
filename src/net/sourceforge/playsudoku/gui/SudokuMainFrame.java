@@ -159,7 +159,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         sudGenerator = new SudokuGenerator();
         sudGrid = sudGenerator.getGrid();
         diff = GV.DIFF_NORMAL;
-        nD = NumDistributuon.evenlyFilled3x3Square3;
+        nD = NumDistributuon.evenlyFilledSquare;
         
         //uRS = new UndoRedoStack(100);
 
@@ -504,32 +504,50 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         butDown.setBorder(new LineBorder(GV.BORDER_COLOR, 2, false));
         butDown.setBackground(GV.BORDER_COLOR);
         
-        bDown = new SudFrameButDown[9];
-        {
-            butDown.add(Box.createRigidArea(GV.DIM_RA));
-            for (int i = 0; i < bDown.length; i++) {
+        bDown = new SudFrameButDown[sudGrid.getDimension()];
+
+        butDown.add(Box.createRigidArea(GV.DIM_RA));
+
+        for (int i = 0; i < bDown.length; i++) {
+            if (bDown.length <= 9)
+            {
                 bDown[i] = new SudFrameButDown((i+1));
-                butDown.add(bDown[i]);
                 bDown[i].setText("<HTML><B>"+(i+1)+"</B></HTML>");
-                bDown[i].addActionListener(bHDown);
-                butDown.add(Box.createRigidArea(GV.DIM_RA));
                 bDown[i].setToolTipText("<HTML>Press '"+(i+1)+"'</HTML>");
                 addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i+1),KeyEvent.VK_1+i,0);
                 addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i+1),KeyEvent.VK_NUMPAD1+i,0);
+            } 
+            else
+            {
+                bDown[i] = new SudFrameButDown((i));
+                bDown[i].setText("<HTML><B>"+String.format("%01X", (i))+"</B></HTML>");
+                bDown[i].setToolTipText("<HTML>Press '"+String.format("%01X", (i))+"'</HTML>");
+                if (i <= 9)
+                {
+                	addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i),KeyEvent.VK_0+i,0);
+                	addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i),KeyEvent.VK_NUMPAD0+i,0);
+                }
+                else
+                {
+                	addKeyAcceleratorButton(bDown[i], actButDown,"press"+String.format("%01X", (i)),KeyEvent.VK_A+(i-10),0);
+                }
             }
-            
-            delBut = new SudFrameButDown(0);
-            delBut.addActionListener(bHDown);
-            butDown.add(delBut);
-            delBut.setText("<HTML><B>Delete</B></HTML>");
-            delBut.setToolTipText("<HTML>Press 'D' or 'Delete'<BR>Delete a number or <B>ALL</B> notes form a cell</HTML>");
-            addKeyAcceleratorButton(delBut, actButDown,"delBut",KeyEvent.VK_D,0);
-            addKeyAcceleratorButton(delBut, actButDown,"delBut",KeyEvent.VK_DELETE,0);
-            
-            lastBut = bDown[0];
-            lastBut.setForeground(Color.BLUE);
-            lastBut.requestFocus();
+            butDown.add(bDown[i]);
+            bDown[i].addActionListener(bHDown);
+            butDown.add(Box.createRigidArea(GV.DIM_RA));
         }
+
+        delBut = new SudFrameButDown(-1);
+        delBut.addActionListener(bHDown);
+        butDown.add(delBut);
+        delBut.setText("<HTML><B>Delete</B></HTML>");
+        delBut.setToolTipText("<HTML>Press 'D' or 'Delete'<BR>Delete a number or <B>ALL</B> notes form a cell</HTML>");
+        addKeyAcceleratorButton(delBut, actButDown,"delBut",KeyEvent.VK_D,0);
+        addKeyAcceleratorButton(delBut, actButDown,"delBut",KeyEvent.VK_DELETE,0);
+        
+        lastBut = bDown[0];
+        lastBut.setForeground(Color.BLUE);
+        lastBut.requestFocus();
         
         //FileChooser
         fc = new JFileChooser();
@@ -943,7 +961,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
                 } else if (tmp == opDiffCustom){
                     doCustomDiff();
                 } else if (tmp == opND1){
-                    nD = NumDistributuon.evenlyFilled3x3Square3;
+                    nD = NumDistributuon.evenlyFilledSquare;
                 } else if (tmp == opND2){
                     nD = NumDistributuon.evenlyDistributedNumbers;
                 } else if (tmp == opND3){

@@ -9,31 +9,28 @@ import java.util.Random;
 public class SudokuGrid {
     
     private ACell[][] grid;
+    public static final int MASK_IS_DELETED =  0x00800000;
     
     private ArrayList<SudokuObserver> observers;
     private boolean hasChanged;
-
+    private int dimension;
     private boolean[][] vertical;
     private boolean[][] horizontal;
     private boolean[][] square;
     
     private Random r;
     
-    public SudokuGrid () {
-        grid = new Cell[9][9];
-        
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-            	grid[j][i] = new Cell(j, i, 10);
-            }
-        }
-        
+    public SudokuGrid (GridBuilder gb) {
+    	
+        grid = gb.CreateGrid();
+        dimension = grid.length;
+        	
         observers = new ArrayList<SudokuObserver>(4);
         hasChanged = false;
         
-        vertical = new boolean[9][9];
-        horizontal = new boolean[9][9];
-        square = new boolean[9][9];
+        vertical = new int[dimension];
+        horizontal = new int[dimension];
+        square = new int[dimension];
         
         this.r = new Random();
     }
@@ -100,10 +97,22 @@ public class SudokuGrid {
     
     public ACell getCell(int x, int y) {
         if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
+    public int getDimension()
+    {
+    	return dimension;
+    }
+    
+    private void checkCoords(int x, int y)
+    {
+        if((y < 0) || (y >= dimension) || (x < 0) || (x >= dimension)) {
             throw new IllegalArgumentException("Invalid cell address.");
         }
+    }
+    
+    public int getRealGridVal(int x, int y) {
+    	checkCoords(x, y);
         
-        return grid[x][y];
+        return grid[x][y].getValue();
     }
 
     public void setCell(ACell cell) {
@@ -120,17 +129,13 @@ public class SudokuGrid {
     }
 
     public int getGridVal(int x, int y) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+    	checkCoords(x, y);
         
         return grid[x][y].getGridValue();
     }
     
     public int getPuzzleVal(int x, int y) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+    	checkCoords(x, y);
         
         return grid[x][y].getPuzzleValue();
     }
@@ -148,11 +153,9 @@ public class SudokuGrid {
     }
     
     public boolean getNote(int x, int y, int note) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
-        if(note < 1 || note > 9) {
-            throw new IllegalArgumentException("Illegal note position. Note position must be form 1 to 9(inclusive).");
+    	checkCoords(x, y);
+        if(note < 1 || note > dimension) {
+            throw new IllegalArgumentException("Illegal note position. Note position must be form 1 to " + dimension + " (inclusive).");
         }
         
         return grid[x][y].getNote(note);
@@ -160,9 +163,7 @@ public class SudokuGrid {
     
     public void setDefault(int x, int y, boolean isDefault)
     {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+    	checkCoords(x, y);
         
         grid[x][y].setGridValue(grid[x][y].getGridValue(), isDefault);
         setChanged();
@@ -170,24 +171,20 @@ public class SudokuGrid {
     }
     
     public boolean isDefault(int x, int y) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+    	checkCoords(x, y);
         
         return grid[x][y].isGiven();
     }
     
     public boolean isEditable(int x, int y) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+    	checkCoords(x, y);
         
         return grid[x][y].isEditable();
     }
     
     public void setGridVal(int x, int y, int val, boolean isDefault) { 
         if(!isEditable(x,y)) return;
-        if(val < 0 || val > 9 ) {
+        if(val < -1 || val > dimension ) {
             throw new IllegalArgumentException("Cell value is illegal.");
         }
         
@@ -199,11 +196,18 @@ public class SudokuGrid {
     
     public void setPuzzleVal(int x, int y, int val) { 
         if(!isEditable(x,y)) return;
-        if(val < 0 || val > 9 ) {
+        if(val < -1 || val > dimension ) {
             throw new IllegalArgumentException("Cell value is illegal.");
         }
         
         grid[x][y].setPuzzleValue(val);
+        else
+        {
+        	tmp |= (val << 4);
+        	tmp &= ~MASK_IS_DELETED;        
+        }
+        
+        grid[x][y].setValue(tmp);
         
         setChanged();
         notifyObservers(grid[x][y]);
@@ -211,14 +215,16 @@ public class SudokuGrid {
     
     public void setEditable(int x, int y, boolean b) {
         grid[x][y].setEditable(b);
+    	grid[x][y].setValue(tmp);
+    	
         setChanged();
         notifyObservers(grid[x][y]);
     }
     
     public void setNote(int x, int y, int note) {
         if(!isEditable(x,y)) return;
-        if(note < 1 || note > 9) {
-            throw new IllegalArgumentException("Illegal Note. Note must be form 1 to 9(inclusive).");
+        if(note < 1 || note > dimension) {
+            throw new IllegalArgumentException("Illegal Note. Note must be form 0 to " + dimension + " (inclusive).");
         }
         grid[x][y].setNote(note, true);
         
@@ -228,7 +234,7 @@ public class SudokuGrid {
     
     public void deleteNote(int x, int y, int note) {
         if(!isEditable(x,y)) return;
-        if(note < 1 || note > 9) {
+        if(note < 1 || note > dimension) {
             throw new IllegalArgumentException("Illegal note position. Note position must be form 1 to 9(inclusive).");
         }
         grid[x][y].setNote(note, false);
@@ -257,16 +263,16 @@ public class SudokuGrid {
     }
 
     public void clearNonDefaultCells() {
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0; j < dimension; j++) {
                 resetCell(j,i,false);
             }
         }
     }
     
     public void resetGrid() {
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0; j < dimension; j++) {
                 resetCell(j,i,true);
             }
         }
@@ -293,16 +299,18 @@ public class SudokuGrid {
         int m = 0 , n = 0;
         
         //reset Arrays
-        for (int i = 0; i < 9; i++) {
+        for (int i = 0; i < dimension; i++) {
             for (int j = 0; j < 9; j++) {
             	vertical[i][j] = horizontal[i][j] = square[i][j] = false;
             }
         }
         
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
-                int trueVal1 = 0;
-                int trueVal2 = 0;
+        int gridSize = (int) Math.round(Math.sqrt(dimension));
+        
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0; j < dimension; j++) {
+                int trueVal1 = -1;
+                int trueVal2 = -1;
                 if(checkPuzzle) {
                     trueVal1 = getVal(j,i);
                     trueVal2 = getVal(i,j);
@@ -312,9 +320,9 @@ public class SudokuGrid {
                 }
 
                 //Square adr in n
-                m = j / 3;
-                n = i / 3;
-                n = 3*m + n;
+                m = j / gridSize;
+                n = i / gridSize;
+                n = gridSize * m + n;
                 
                 int k1 = 0, k2 = 0;
                 if(trueVal1 != 0) {
@@ -345,15 +353,18 @@ public class SudokuGrid {
         }
         
         if(toBeSolvedToo) {
-            for (int i = 0; i < 9; i++) {
-                for (int j = 0; j < 9; j++) {
-	                if(vertical[i][j] && 
-	                   horizontal[i][j] && 
-	                   square[i][j]) {
-	                    continue;
-	                } else {
-	                    return false;
-	                }
+        	int checkmask = 0;
+        	for (int k = 0; k < dimension; k++) {
+               checkmask |= 1 << k;
+        	}
+        	
+            for (int k = 0; k < dimension; k++) {
+                if(vertical[k] == checkmask && 
+                   horizontal[k] == checkmask && 
+                   square[k] == checkmask) {
+                    continue;
+                } else {
+                    return false;
                 }
             }
         } 
@@ -361,18 +372,18 @@ public class SudokuGrid {
     }
     
     public int[] getAvailabeValuesField(int x, int y, boolean sortIt) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+        checkCoords(x, y);
         
         checkGrid(false, true, false);
         
-        int n = 3*(x/3)+(y/3);
+        int gridSize = (int) Math.round(Math.sqrt(dimension));
+
+        int n = gridSize*(x/gridSize)+(y/gridSize);
 
         int k = 0;
-        boolean[] b = new boolean[9];
+        boolean[] b = new boolean[dimension];
         
-        for(int i = 0; i < 9; i++) {
+        for(int i = 0; i < dimension; i++) {
             
             if( (vertical[x][i] == false) && 
                 (horizontal[y][i] == false) && 
@@ -387,7 +398,7 @@ public class SudokuGrid {
         
         //SORT RESULT
         k = 0;
-        for(int i = 0; i < 9; i++) {
+        for(int i = 0; i < dimension; i++) {
             if(b[i]) {
                 result[k] = i+1;
                 k++;
@@ -400,6 +411,30 @@ public class SudokuGrid {
         return result;
     }
     
+    protected GeneratorMove getFirstMove() {
+        return getNextMove(-1,0);
+    }
+    
+    protected GeneratorMove getNextMove(int x, int y) {
+        do { //No default Fields
+            if(x + 1 >= dimension) { //y mod dimension;
+                if(y + 1 >= dimension) {
+                    return null;
+                }
+                x = 0;
+                y += 1;
+            } else {
+                x += 1;
+            }
+        } while(isDefault(x,y));
+
+        int[] moves = getAvailabeValuesField(x,y, false);
+        if(moves.length > 0) {
+            return new GeneratorMove(x,y,moves,0);
+        }
+        return null;
+    }
+
     //OBSERVERS MANEGMANT
     public void addObserver(SudokuObserver so) {
         observers.add(so);
@@ -460,8 +495,8 @@ public class SudokuGrid {
 
     public String toString() {
         StringBuffer sb = new StringBuffer(200);
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
+        for(int i = 0; i < dimension; i++) {
+            for(int j = 0; j < dimension; j++) {
                 sb.append("|"); sb.append(getGridVal(j,i));
             }
             sb.append("|\n");

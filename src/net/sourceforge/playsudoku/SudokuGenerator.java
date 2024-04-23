@@ -14,7 +14,7 @@ public class SudokuGenerator {
     private Random random;
     
     public SudokuGenerator() {
-        this(new SudokuGrid());
+        this(new SudokuGrid(new SquareGridBuilder(4)));
     } 
     
     public SudokuGenerator(SudokuGrid grid) {
@@ -70,9 +70,12 @@ public class SudokuGenerator {
         if(!grid.isGridValid()) {
             return false;
         }
-
+        int count = 0;
+        
         while(!grid.isGridSolved()) {
-
+        	if (count++ > 10000000) {
+        		return false;
+        	}
             GeneratorMove next = getNextMove(x,y);
             if(next != null) {
                 grid.setGridVal(next.getX(),next.getY(),next.getVal(), false);
@@ -108,8 +111,8 @@ public class SudokuGenerator {
     }
     
     private void showSolution() {
-        for(int i = 0; i < 9; i++) {
-            for(int j = 0; j < 9; j++) {
+        for(int i = 0; i < grid.getDimension(); i++) {
+            for(int j = 0; j < grid.getDimension(); j++) {
                 grid.setEditable(j,i,true);
                 grid.deleteAllNotes(j,i);
                 grid.setPuzzleVal(j,i,0);
@@ -120,20 +123,20 @@ public class SudokuGenerator {
     }
     
     public void generateGrid() {
-        generateFirst9Moves();
+        generateFirstMoves();
         solveGrid();
-        for(int i = 0; i < 9; i++) {
+        for(int i = 0; i < grid.getDimension(); i++) {
             grid.setEditable(0,i,true);
             grid.setDefault(0,i,false);
         }
     }
     
-    private void generateFirst9Moves() {
-        boolean[] b = new boolean[9];
-        for(int i = 0; i < 9; i++) {
+    private void generateFirstMoves() {
+        boolean[] b = new boolean[grid.getDimension()];
+        for(int i = 0; i < grid.getDimension(); i++) {
             int val;
             do {
-                val = random.nextInt(9);
+                val = random.nextInt(grid.getDimension());
             } while(b[val]);
             grid.setGridVal(0,i,val+1, true);
             b[val] = true;
@@ -144,23 +147,28 @@ public class SudokuGenerator {
     public void generatePuzzle(int openFields, NumDistributuon nD) {
         generateGrid();
 
-        int[] count = new int[9];
-        int min = openFields / 9;
+        int dimension = grid.getDimension();
+        int fieldsToFill = Math.min(dimension*dimension, openFields);
+        
+        int[] count = new int[grid.getDimension()];
+        int min = fieldsToFill / grid.getDimension();
         int x = 0, y = 0, sqAdr = 0;
 
         int k = 0;
-        for (int j = 0; j < openFields;) {
+        int gridSize = (int) Math.round(Math.sqrt(grid.getDimension()));
+
+        for (int j = 0; j < fieldsToFill;) {
             k++;
-            y = random.nextInt(9);
-            x = random.nextInt(9);
+            y = random.nextInt(grid.getDimension());
+            x = random.nextInt(grid.getDimension());
             if(grid.isDefault(x,y)) continue;
             
-            sqAdr = 3*(x/3)+(y/3);
+            sqAdr = gridSize*(x/gridSize)+(y/gridSize);
             
             switch (nD) {
             case random: break;
             
-            case evenlyFilled3x3Square3:
+            case evenlyFilledSquare:
                 if(count[sqAdr] >= min &&
                         !allHaveMinCount(count, min)) continue;
                 count[sqAdr]++;

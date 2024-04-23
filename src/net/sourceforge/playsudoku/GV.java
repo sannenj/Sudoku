@@ -70,7 +70,7 @@ public class GV {
     public final static int DIFF_NORMAL = 30;
     public static final int DIFF_HARD = 26;
     
-    public enum NumDistributuon {evenlyDistributedNumbers, evenlyFilled3x3Square3, random};
+    public enum NumDistributuon {evenlyDistributedNumbers, evenlyFilledSquare, random};
     
     public final static String ERROR_LOAD= "Sudoku could not be loaded!";
     
