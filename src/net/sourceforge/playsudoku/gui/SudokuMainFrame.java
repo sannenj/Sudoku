@@ -511,11 +511,11 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         for (int i = 0; i < bDown.length; i++) {
             if (bDown.length <= 9)
             {
-                bDown[i] = new SudFrameButDown((i+1));
+                bDown[i] = new SudFrameButDown((i));
                 bDown[i].setText("<HTML><B>"+(i+1)+"</B></HTML>");
                 bDown[i].setToolTipText("<HTML>Press '"+(i+1)+"'</HTML>");
-                addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i+1),KeyEvent.VK_1+i,0);
-                addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i+1),KeyEvent.VK_NUMPAD1+i,0);
+                addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i+1),KeyEvent.VK_1+i+1,0);
+                addKeyAcceleratorButton(bDown[i], actButDown,"press"+(i+1),KeyEvent.VK_NUMPAD1+i+1,0);
             } 
             else
             {

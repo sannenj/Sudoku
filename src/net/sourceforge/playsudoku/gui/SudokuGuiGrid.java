@@ -104,7 +104,8 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
             
             if (gridDimension <= 9)
             {
-            	g.drawString(val == -1 ? "" : ""+val, GV.FONT_BIG_H, GV.FONT_BIG_W);
+            	val += 1;
+            	g.drawString(val == 0 ? "" : ""+val, GV.FONT_BIG_H, GV.FONT_BIG_W);
             }
             else
             {

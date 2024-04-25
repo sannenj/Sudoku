@@ -9,7 +9,6 @@ import java.util.Random;
 public class SudokuGrid {
     
     private ACell[][] grid;
-    public static final int MASK_IS_DELETED =  0x00800000;
     
     private ArrayList<SudokuObserver> observers;
     private boolean hasChanged;
@@ -105,7 +104,7 @@ public class SudokuGrid {
     private void checkCoords(int x, int y)
     {
         if((y < 0) || (y >= dimension) || (x < 0) || (x >= dimension)) {
-            throw new IllegalArgumentException("Invalid cell address.");
+            throw new IllegalArgumentException("Invalid cell address. x:" + x + ", y:" + y);
         }
     }
     
@@ -204,7 +203,7 @@ public class SudokuGrid {
         else
         {
         	tmp |= (val << 4);
-        	tmp &= ~MASK_IS_DELETED;        
+        	tmp &= ~IntegerCell.MASK_IS_DELETED;        
         }
         
         grid[x][y].setValue(tmp);
@@ -400,7 +399,7 @@ public class SudokuGrid {
         k = 0;
         for(int i = 0; i < dimension; i++) {
             if(b[i]) {
-                result[k] = i+1;
+                result[k] = i;
                 k++;
             }
         }
@@ -417,8 +416,8 @@ public class SudokuGrid {
     
     protected GeneratorMove getNextMove(int x, int y) {
         do { //No default Fields
-            if(x + 1 >= dimension) { //y mod dimension;
-                if(y + 1 >= dimension) {
+            if((x+1) >= dimension) { //y mod dimension;
+                if((y+1) >= dimension) {
                     return null;
                 }
                 x = 0;
@@ -430,7 +429,7 @@ public class SudokuGrid {
 
         int[] moves = getAvailabeValuesField(x,y, false);
         if(moves.length > 0) {
-            return new GeneratorMove(x,y,moves,0);
+            return new GeneratorMove(x,y,moves);
         }
         return null;
     }

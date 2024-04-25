@@ -59,6 +59,8 @@ public class SudokuGenerator {
         if(m != null) {
             grid.setGridVal(m.getX(),m.getY(),m.getVal(), false);
             st.push(m);
+//            System.out.println(m);
+//            System.out.println(st.size());
             return solveGridIterative(m);
         }
         return true;
@@ -70,29 +72,33 @@ public class SudokuGenerator {
         if(!grid.isGridValid()) {
             return false;
         }
-        int count = 0;
-        
+
+        GeneratorMove next = grid.getNextMove(x,y);
         while(!grid.isGridSolved()) {
-        	if (count++ > 10000000) {
-        		return false;
-        	}
-            GeneratorMove next = getNextMove(x,y);
+
             if(next != null) {
                 grid.setGridVal(next.getX(),next.getY(),next.getVal(), false);
                 st.push(next);
+//                System.out.println(next);
+//                System.out.println(st.size());
                 y = next.getY();
                 x = next.getX();
+                
+                // Drill deeper
+                next = grid.getNextMove(x,y);
             } else {
                 try{
+                	// Puzzle is not solved and we have now valid moves left for the next step
+                	
+                	// Roll back the invalid next step.
                     next = st.pop();
-                    while(next.setNextMove() == false) {
-                        grid.setGridVal(next.getX(),next.getY(),0, false);
-                        next = st.pop(); 
+                    
+                    // We are now back at the current step.
+                    if (next.setNextMove() == false) {
+                    	// Mark earlier chosen cell value as invalid if the current step is now also depleted.
+                        grid.setGridVal(next.getX(),next.getY(),-1);
+                        next = null;
                     }
-                    grid.setGridVal(next.getX(),next.getY(),next.getVal(), false);
-                    st.push(next);
-                    y = next.getY();
-                    x = next.getX();
                 } catch (EmptyStackException e) {
                     return false;
                 } 
@@ -115,7 +121,7 @@ public class SudokuGenerator {
             for(int j = 0; j < grid.getDimension(); j++) {
                 grid.setEditable(j,i,true);
                 grid.deleteAllNotes(j,i);
-                grid.setPuzzleVal(j,i,0);
+                //grid.setPuzzleVal(j,i,-1);
                 grid.setPuzzleVal(j,i,grid.getGridVal(j,i));
                 grid.setEditable(j,i,false);
             }
@@ -175,9 +181,9 @@ public class SudokuGenerator {
                 break;
                 
             case evenlyDistributedNumbers:
-                if(count[grid.getGridVal(x,y)-1] >= min 
+                if(count[grid.getGridVal(x,y)] >= min 
                         && !allHaveMinCount(count, min)) continue;
-                count[grid.getGridVal(x,y)-1]++;
+                count[grid.getGridVal(x,y)]++;
                 break;
             }
             grid.setDefault(x,y,true);            
