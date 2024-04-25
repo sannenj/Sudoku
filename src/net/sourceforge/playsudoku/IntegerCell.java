@@ -25,37 +25,29 @@ public class IntegerCell extends Cell {
 		{
 			value = value_;
 		}
-        value += x_ << 28;
-        value += y_ << 24;	
-		value += MASK_IS_EDITABLE;
+        value |= x_ << 28;
+        value |= y_ << 24;	
+		value |= MASK_IS_EDITABLE;
 	}
 	
 	@Override
 	public int getValue() {
-		// TODO Auto-generated method stub
 		return value;
 	}
 	
 	@Override
 	public void setValue(int val) {
-		// TODO Auto-generated method stub
 		value = val;
-		
-		if (value == -1)
-		{
-			value += MASK_IS_DELETED;
-			value &= (MASK_X + MASK_Y + MASK_IS_EDITABLE);
-		}
 	}
 	
 	@Override
 	public int getX() {
 		// TODO Auto-generated method stub
-		return (value & SudokuGrid.MASK_X) >>> 28;
+		return (value & MASK_X) >>> 28;
 	}
 	@Override
 	public int getY() {
 		// TODO Auto-generated method stub
-		return (value & SudokuGrid.MASK_Y) >>> 24;
+		return (value & MASK_Y) >>> 24;
 	}
 }

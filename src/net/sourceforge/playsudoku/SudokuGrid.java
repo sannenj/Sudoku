@@ -7,19 +7,7 @@ import java.util.Random;
 import net.sourceforge.playsudoku.io.SerGrid;
 
 public class SudokuGrid {
-    
-    public static final int MASK_X =           0xF0000000;
-    public static final int MASK_Y =           0x0F000000;
-    public static final int MASK_PUZZLE_VAL =  0x000000F0;
-    public static final int MASK_GRID_VAL =    0x0000000F;
-    public static final int MASK_NOTES =       0x0001FF00;
-    public static final int MASK_IS_DEFAULT =  0x00100000;
-    public static final int MASK_IS_EDITABLE = 0x00200000;
-    public static final int MASK_IS_HINT =     0x00400000;
-    public static final int MASK_IS_DELETED =  0x00800000;
-    
-    private static final int HEX1FF = 0x1ff;
-    
+   
     private Cell[][] grid;
     
     private ArrayList<SudokuObserver> observers;
@@ -54,7 +42,7 @@ public class SudokuGrid {
     private void checkCoords(int x, int y)
     {
         if((y < 0) || (y >= dimension) || (x < 0) || (x >= dimension)) {
-            throw new IllegalArgumentException("Invalid cell address.");
+            throw new IllegalArgumentException("Invalid cell address. x:" + x + ", y:" + y);
         }
     }
     
@@ -65,33 +53,35 @@ public class SudokuGrid {
     }
     
     public static int getX(int cell) {
-        return (cell & SudokuGrid.MASK_X) >>> 28;
+        return (cell & IntegerCell.MASK_X) >>> 28;
     }
     
     public static int getY(int cell) {
-        return (cell & SudokuGrid.MASK_Y) >>> 24;
+        return (cell & IntegerCell.MASK_Y) >>> 24;
     }
     
     public int getGridVal(int x, int y) {
     	checkCoords(x, y);
         
-        return ((grid[x][y].getValue() & MASK_IS_DELETED) != 0) ? -1 : grid[x][y].getValue() & MASK_GRID_VAL;
+        return ((grid[x][y].getValue() & IntegerCell.MASK_IS_DELETED) != 0) ? -1 : grid[x][y].getValue() & IntegerCell.MASK_GRID_VAL;
     }
     
+    // Used from GuiCell
     public static int getGridVal(int SudokuRealGridVal) {
         
-        return ((SudokuRealGridVal & MASK_IS_DELETED) != 0) ? -1 : (SudokuRealGridVal & MASK_GRID_VAL);
+        return ((SudokuRealGridVal & IntegerCell.MASK_IS_DELETED) != 0) ? -1 : (SudokuRealGridVal & IntegerCell.MASK_GRID_VAL);
     }
     
     public int getPuzzleVal(int x, int y) {
     	checkCoords(x, y);
         
-        return ((grid[x][y].getValue() & MASK_IS_DELETED) != 0) ? -1 : ((grid[x][y].getValue() & MASK_PUZZLE_VAL) >>> 4);
+        return ((grid[x][y].getValue() & IntegerCell.MASK_IS_DELETED) != 0) ? -1 : ((grid[x][y].getValue() & IntegerCell.MASK_PUZZLE_VAL) >>> 4);
     }
     
+    // Used from GuiCell
     public static int getPuzzleVal(int SudokuRealGridVal) {
         
-        return ((SudokuRealGridVal & MASK_IS_DELETED) != 0) ? -1 : ((SudokuRealGridVal & MASK_PUZZLE_VAL) >>> 4);
+        return ((SudokuRealGridVal & IntegerCell.MASK_IS_DELETED) != 0) ? -1 : ((SudokuRealGridVal & IntegerCell.MASK_PUZZLE_VAL) >>> 4);
     }
     
     /**
@@ -106,13 +96,13 @@ public class SudokuGrid {
         }
     }
     
-    public static int getVal(int realGridVal) {
-        if(isDefault(realGridVal)) {
-            return getGridVal(realGridVal);
-        } else {
-            return getPuzzleVal(realGridVal);
-        }
-    }
+//    public static int getVal(int realGridVal) {
+//        if(isDefault(realGridVal)) {
+//            return getGridVal(realGridVal);
+//        } else {
+//            return getPuzzleVal(realGridVal);
+//        }
+//    }
     
     public boolean getNote(int x, int y, int note) {
     	checkCoords(x, y);
@@ -138,14 +128,14 @@ public class SudokuGrid {
     public boolean isDefault(int x, int y) {
     	checkCoords(x, y);
         
-        if((grid[x][y].getValue() & MASK_IS_DEFAULT) == MASK_IS_DEFAULT) {
+        if((grid[x][y].getValue() & IntegerCell.MASK_IS_DEFAULT) == IntegerCell.MASK_IS_DEFAULT) {
             return true;
         }
         return false;
     }
     
     public static boolean isDefault(int realGridVal) {
-        if((realGridVal & MASK_IS_DEFAULT) == MASK_IS_DEFAULT) {
+        if((realGridVal & IntegerCell.MASK_IS_DEFAULT) == IntegerCell.MASK_IS_DEFAULT) {
             return true;
         }
         return false;
@@ -154,14 +144,14 @@ public class SudokuGrid {
     public boolean isEditable(int x, int y) {
     	checkCoords(x, y);
         
-        if((grid[x][y].getValue() & MASK_IS_EDITABLE) == MASK_IS_EDITABLE) {
+        if((grid[x][y].getValue() & IntegerCell.MASK_IS_EDITABLE) == IntegerCell.MASK_IS_EDITABLE) {
             return true;
         }
         return false;
     }
     
     public static boolean isEditable(int realGridVal) {
-        if((realGridVal & MASK_IS_EDITABLE) == MASK_IS_EDITABLE) {
+        if((realGridVal & IntegerCell.MASK_IS_EDITABLE) == IntegerCell.MASK_IS_EDITABLE) {
             return true;
         }
         return false;
@@ -170,7 +160,7 @@ public class SudokuGrid {
     public boolean isHint(int x, int y) {
     	checkCoords(x, y);
         
-        if((grid[x][y].getValue() & MASK_IS_HINT) == MASK_IS_HINT) {
+        if((grid[x][y].getValue() & IntegerCell.MASK_IS_HINT) == IntegerCell.MASK_IS_HINT) {
             return true;
         }
         return false;
@@ -178,7 +168,7 @@ public class SudokuGrid {
     
     public static boolean isHint(int realGridVal) {
         
-        if((realGridVal & MASK_IS_HINT) == MASK_IS_HINT) {
+        if((realGridVal & IntegerCell.MASK_IS_HINT) == IntegerCell.MASK_IS_HINT) {
             return true;
         }
         return false;
@@ -200,16 +190,17 @@ public class SudokuGrid {
         }
         
         int tmp = grid[x][y].getValue();
-        tmp &= ~MASK_GRID_VAL;
+        tmp &= ~IntegerCell.MASK_GRID_VAL;
         
         if (val == -1)
         {
-        	tmp |= MASK_IS_DELETED;        
+        	tmp |= IntegerCell.MASK_IS_DELETED;
+        	tmp &= ~IntegerCell.MASK_GRID_VAL;
         }
         else
         {
         	tmp |= val;
-        	tmp &= ~MASK_IS_DELETED;        
+        	tmp &= ~IntegerCell.MASK_IS_DELETED;        
         }
         grid[x][y].setValue(tmp);
         
@@ -224,15 +215,15 @@ public class SudokuGrid {
         }
         
         int tmp = grid[x][y].getValue();
-        tmp &= ~MASK_PUZZLE_VAL;
+        tmp &= ~IntegerCell.MASK_PUZZLE_VAL;
         if (val == -1)
         {
-        	tmp |= MASK_IS_DELETED;        
+        	tmp |= IntegerCell.MASK_IS_DELETED;        
         }
         else
         {
         	tmp |= (val << 4);
-        	tmp &= ~MASK_IS_DELETED;        
+        	tmp &= ~IntegerCell.MASK_IS_DELETED;        
         }
         
         grid[x][y].setValue(tmp);
@@ -246,9 +237,9 @@ public class SudokuGrid {
         
         int tmp = grid[x][y].getValue();        
         if(b) {
-            tmp |= MASK_IS_DEFAULT;
+            tmp |= IntegerCell.MASK_IS_DEFAULT;
         } else {
-            tmp &= ~MASK_IS_DEFAULT;
+            tmp &= ~IntegerCell.MASK_IS_DEFAULT;
         }
         grid[x][y].setValue(tmp);
         
@@ -259,9 +250,9 @@ public class SudokuGrid {
     public void setEditable(int x, int y, boolean b) {
     	int tmp = grid[x][y].getValue();
     	if(b) {
-            tmp |= MASK_IS_EDITABLE;
+            tmp |= IntegerCell.MASK_IS_EDITABLE;
         } else {
-            tmp &= ~MASK_IS_EDITABLE;
+            tmp &= ~IntegerCell.MASK_IS_EDITABLE;
         }
     	grid[x][y].setValue(tmp);
     	
@@ -274,9 +265,9 @@ public class SudokuGrid {
         
         int tmp = grid[x][y].getValue();
         if(b) {
-            tmp |= MASK_IS_HINT;
+            tmp |= IntegerCell.MASK_IS_HINT;
         } else {
-            tmp &= ~MASK_IS_HINT;
+            tmp &= ~IntegerCell.MASK_IS_HINT;
         }
         grid[x][y].setValue(tmp);
         
@@ -314,7 +305,7 @@ public class SudokuGrid {
         if(!isEditable(x,y)) return;
         
         int tmp = grid[x][y].getValue();
-        tmp &= ~MASK_NOTES;
+        tmp &= ~IntegerCell.MASK_NOTES;
         grid[x][y].setValue(tmp);
         
         setChanged();
@@ -325,16 +316,16 @@ public class SudokuGrid {
         
     	int tmp = grid[x][y].getValue();
     	if(resetDefaultCellsToo) {
-            tmp &= MASK_X + MASK_Y;
-            tmp |= MASK_IS_DELETED;
+            tmp &= IntegerCell.MASK_X + IntegerCell.MASK_Y;
+            tmp |= IntegerCell.MASK_IS_DELETED;
         } else {
-            tmp &= ~(MASK_NOTES + MASK_PUZZLE_VAL);
-            if ((tmp & MASK_IS_DEFAULT) == 0)
+            tmp &= ~(IntegerCell.MASK_NOTES + IntegerCell.MASK_PUZZLE_VAL);
+            if ((tmp & IntegerCell.MASK_IS_DEFAULT) == 0)
             {
-            	tmp |= MASK_IS_DELETED;
+            	tmp |= IntegerCell.MASK_IS_DELETED;
             }
         }
-        tmp |= MASK_IS_EDITABLE;
+        tmp |= IntegerCell.MASK_IS_EDITABLE;
         grid[x][y].setValue(tmp);
         
         setChanged();
@@ -398,10 +389,10 @@ public class SudokuGrid {
                 }
                 int k1 = 0, k2 = 0;
                 if(trueVal1 != -1) {
-                    k1 =  1 << (trueVal1 - 1);
+                    k1 =  1 << (trueVal1);
                 }
                 if(trueVal2 != -1) {
-                    k2 =  1 << (trueVal2 - 1);
+                    k2 =  1 << (trueVal2);
                 } 
                 
                 //Square adr in n
@@ -468,7 +459,7 @@ public class SudokuGrid {
         k = 0;
         for(int i = 0; i < dimension; i++) {
             if(b[i]) {
-                result[k] = i+1;
+                result[k] = i;
                 k++;
             }
         }
@@ -485,8 +476,8 @@ public class SudokuGrid {
     
     protected GeneratorMove getNextMove(int x, int y) {
         do { //No default Fields
-            if(x + 1 >= dimension) { //y mod dimension;
-                if(y + 1 >= dimension) {
+            if((x+1) >= dimension) { //y mod dimension;
+                if((y+1) >= dimension) {
                     return null;
                 }
                 x = 0;
@@ -498,7 +489,7 @@ public class SudokuGrid {
 
         int[] moves = getAvailabeValuesField(x,y, false);
         if(moves.length > 0) {
-            return new GeneratorMove(x,y,moves,0);
+            return new GeneratorMove(x,y,moves);
         }
         return null;
     }
