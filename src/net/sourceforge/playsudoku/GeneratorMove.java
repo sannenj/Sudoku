@@ -57,8 +57,10 @@ public class GeneratorMove {
         sb.append(y);
         sb.append("; val: ");
         sb.append(getVal());
-        sb.append("; rm: ");
-        sb.append(availabeMoves.length - valIndex);
+        sb.append("; al: ");
+        sb.append(availabeMoves.length);
+        sb.append("; i: ");
+        sb.append(valIndex);
         sb.append("]");
         return sb.toString();
     }

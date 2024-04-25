@@ -14,7 +14,7 @@ public class SudokuGenerator {
     private Random random;
     
     public SudokuGenerator() {
-        this(new SudokuGrid(new SquareGridBuilder(4)));
+        this(new SudokuGrid(new SquareGridBuilder(3)));
     } 
     
     public SudokuGenerator(SudokuGrid grid) {
@@ -138,6 +138,8 @@ public class SudokuGenerator {
     }
     
     private void generateFirstMoves() {
+        System.out.println("FirstMoves start");
+
         boolean[] b = new boolean[grid.getDimension()];
         for(int i = 0; i < grid.getDimension(); i++) {
             int val;
@@ -146,8 +148,11 @@ public class SudokuGenerator {
             } while(b[val]);
             grid.setGridVal(0,i,val+1, true);
             b[val] = true;
+            System.out.println(val);
         }
         b = null;
+        
+        System.out.println("FirstMoves end");
     }
 
     public void generatePuzzle(int openFields, NumDistributuon nD) {
