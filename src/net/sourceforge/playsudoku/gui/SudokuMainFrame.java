@@ -25,7 +25,7 @@ import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+//import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
@@ -47,15 +47,19 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileFilter;
 
+import net.sourceforge.playsudoku.ACell;
+import net.sourceforge.playsudoku.CommandHandler;
 import net.sourceforge.playsudoku.GV;
+import net.sourceforge.playsudoku.GenerateGridCommand;
+import net.sourceforge.playsudoku.Observer;
 import net.sourceforge.playsudoku.SudokuGrid;
 import net.sourceforge.playsudoku.SudokuGenerator;
 import net.sourceforge.playsudoku.SudokuObserver;
-import net.sourceforge.playsudoku.UndoRedoStack;
+//import net.sourceforge.playsudoku.UndoRedoStack;
 import net.sourceforge.playsudoku.GV.NumDistributuon;
 import net.sourceforge.playsudoku.GV.NumberEntry;
-import net.sourceforge.playsudoku.io.LoadSaver;
-import net.sourceforge.playsudoku.io.SerGrid;
+//import net.sourceforge.playsudoku.io.LoadSaver;
+//import net.sourceforge.playsudoku.io.SerGrid;
 
 
 public class SudokuMainFrame extends JFrame implements SudokuObserver {
@@ -120,13 +124,16 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     private JFileChooser fc;
     //END GUI
     
+    private CommandHandlerObserver cmdHandlerObs;   
+    private CommandHandler cmdHandler;
+    
     private int diff;
     private NumDistributuon nD;
     private SudokuGenerator sudGenerator;
     private boolean hasTheGridBeenChanged;
     private boolean autoCheck;
     
-    private UndoRedoStack uRS;
+    //private UndoRedoStack uRS;
     
     private static SudFrameButDown lastBut;
     private static NumberEntry ne;
@@ -146,19 +153,22 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         actButDown = new ActionButDown();
         actButUp = new ActionButUp();
         
+        cmdHandlerObs = new CommandHandlerObserver();
+        cmdHandler = new CommandHandler(cmdHandlerObs);
+        
         sudGenerator = new SudokuGenerator();
         sudGrid = sudGenerator.getGrid();
         diff = GV.DIFF_NORMAL;
         nD = NumDistributuon.evenlyFilled3x3Square3;
         
-        uRS = new UndoRedoStack(100);
+        //uRS = new UndoRedoStack(100);
 
         ne = GV.NumberEntry.sntc;
         
         initMenu();
         initGUI();
-        uRS.setUndoButton(bUp[4]);
-        uRS.setRedoButton(bUp[5]);
+        //uRS.setUndoButton(bUp[4]);
+        //uRS.setRedoButton(bUp[5]);
         setNotEnabledItems();
         
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
@@ -483,7 +493,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         all.add(butUp, BorderLayout.NORTH);
         
         //GRID
-        guiGrid = new SudokuGuiGrid(sudGrid, uRS);
+        guiGrid = new SudokuGuiGrid(sudGrid, cmdHandler);
         guiGrid.setBorder(new LineBorder(new Color(238,238,238), 4, false));
         all.add(guiGrid, BorderLayout.CENTER);
         
@@ -625,17 +635,18 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void generateNewSud() {
-        boolean b = askSureQuestion("generate new Sudoku?");
-        if(b) {
-            autoCheck = false;
-            setDiffLabelVal(diff);
-            sudGrid.resetGrid();
-            sudGenerator.generatePuzzle(diff, nD);
-            uRS.reset();
-            setGridChange(false);
-            guiGrid.repaint();
-            autoCheck = true;
-        }
+        autoCheck = false;
+        setDiffLabelVal(diff);
+
+        cmdHandler.doCommand(
+        		new GenerateGridCommand(sudGenerator, 
+        				                sudGrid, 
+        				                diff, 
+        				                nD));
+
+        setGridChange(false);
+        //guiGrid.repaint();
+        autoCheck = true;
     }
     
     private void setDiffLabelVal(int diff) {
@@ -648,24 +659,22 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doUndo() {
-        int cell = uRS.undo();
-        if(cell != -1) {
-           sudGrid.setRealGridVal(cell); 
-        }
+        autoCheck = false;
+    	cmdHandler.undo();
+        autoCheck = true;
     }
     
     private void doRedo() {
-        int cell = uRS.redo();
-        if(cell != -1) {
-            sudGrid.setRealGridVal(cell);
-        }
+        autoCheck = false;
+    	cmdHandler.redo();
+        autoCheck = true;
     }
     
     private void doNewDesign() {
         boolean b = askSureQuestion("design new Sudoku?");
         if(b) {
             sudGrid.resetGrid();
-            uRS.reset();
+            cmdHandler.reset();
             setGridChange(false);
             guiGrid.repaint();
         }
@@ -675,7 +684,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         //TODO When Sudoku is not valid ???
         boolean b = askSureQuestion("solve the grid automaticly?");
         if(b) {
-            uRS.reset();
+        	cmdHandler.reset();
             if(!sudGrid.isPuzzleSolved()) {
                 autoCheck = false;
                 try {
@@ -688,7 +697,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
                     e.printStackTrace();
                 }
             }
-            uRS.reset();
+            cmdHandler.reset();
             JOptionPane.showMessageDialog(this, GV.INFO_SOLVED, "Solved", 
                     JOptionPane.INFORMATION_MESSAGE);
         } 
@@ -699,7 +708,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         if(b) {
             autoCheck = false;
             sudGrid.clearNonDefaultCells();
-            uRS.reset();
+            cmdHandler.reset();
             setGridChange(false);
             autoCheck = true;
         }
@@ -718,24 +727,24 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doSave() {      
-        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
-            try {
-                SerGrid sg = sudGrid.getSerGrid();
-                File file = fc.getSelectedFile();
-                String aPath = file.getAbsolutePath();
-                if(!aPath.toLowerCase().endsWith(".ssud")) {
-                    aPath = aPath + ".ssud";
-                    file = new File(aPath);
-                }
-                LoadSaver.save(sg, file);
-                fc.setSelectedFile(file);
-                setGridChange(false);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, GV.ERROR_SAVE, "Error", 
-                        JOptionPane.ERROR_MESSAGE);
-            }
-        }
+//        if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+//            try {
+//                SerGrid sg = sudGrid.getSerGrid();
+//                File file = fc.getSelectedFile();
+//                String aPath = file.getAbsolutePath();
+//                if(!aPath.toLowerCase().endsWith(".ssud")) {
+//                    aPath = aPath + ".ssud";
+//                    file = new File(aPath);
+//                }
+//                LoadSaver.save(sg, file);
+//                fc.setSelectedFile(file);
+//                setGridChange(false);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                JOptionPane.showMessageDialog(this, GV.ERROR_SAVE, "Error", 
+//                        JOptionPane.ERROR_MESSAGE);
+//            }
+//        }
     }
     
     private boolean askSureQuestion(String sureFor) {
@@ -760,25 +769,25 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doLoad() {
-        boolean b = askSureQuestion("load a game?");
-        if(b) {
-            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                try {
-                    autoCheck = false;
-                    SerGrid sg = LoadSaver.load(fc.getSelectedFile().getAbsolutePath());
-                    sudGrid.setSerGrid(sg);
-                    setDiffLabelVal(sg.difficulty);
-                    autoCheck = true;
-                    uRS.reset();
-                    setGridChange(false);
-                } catch (Exception e) {
-                    autoCheck = true;
-                    e.printStackTrace();
-                    JOptionPane.showMessageDialog(this, GV.ERROR_LOAD, "Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }     
+//        boolean b = askSureQuestion("load a game?");
+//        if(b) {
+//            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+//                try {
+//                    autoCheck = false;
+//                    SerGrid sg = LoadSaver.load(fc.getSelectedFile().getAbsolutePath());
+//                    sudGrid.setSerGrid(sg);
+//                    setDiffLabelVal(sg.difficulty);
+//                    autoCheck = true;
+//                    cmdHandler.reset();
+//                    setGridChange(false);
+//                } catch (Exception e) {
+//                    autoCheck = true;
+//                    e.printStackTrace();
+//                    JOptionPane.showMessageDialog(this, GV.ERROR_LOAD, "Error", 
+//                            JOptionPane.ERROR_MESSAGE);
+//                }
+//            }
+//        }     
     }
     
     private void setGridToFinished() {
@@ -789,7 +798,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
                 sudGrid.setEditable(i,j,false);
             }
         }
-        uRS.reset();
+        cmdHandler.reset();
         autoCheck = true;
     }
     
@@ -828,10 +837,19 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         return ne;
     }
     
-    public void updateCellChange(int cell) {
+    public void updateCellChange(ACell cell) {
         setGridChange(true);
         repaint();
         doCheck();
+    }
+    
+    private class CommandHandlerObserver implements Observer
+    {
+	    public void update()
+	    {
+	    	bUp[4].setEnabled(cmdHandler.getUndoStackSize() > 0);
+	    	bUp[5].setEnabled(cmdHandler.getRedoStackSize() > 0);
+	    }
     }
     
     private class ButtonHandlerUp implements ActionListener {
