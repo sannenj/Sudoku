@@ -77,16 +77,23 @@ public class SudokuGrid {
         {
             for (int j = 0; j < 9; j++) 
             {
-            	if (grid[j][i] != another.grid[j][i]) setChanged();
                 try {
 					grid[j][i] = another.grid[j][i].clone();
-	                notifyObservers(grid[j][i]);
 				} catch (CloneNotSupportedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
             }
-        }        
+        } 
+
+        for (int i = 0; i < 9; i++) 
+        {
+            for (int j = 0; j < 9; j++) 
+            {
+        		setChanged();   
+                notifyObservers(grid[j][i]);
+            }
+        }
     }  
     
     
@@ -99,14 +106,17 @@ public class SudokuGrid {
         return grid[x][y];
     }
 
-    public ACell setCell(ACell cell) {
+    public void setCell(ACell cell) {
     	int x = cell.getX();
     	int y = cell.getY();
         if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
             throw new IllegalArgumentException("Invalid cell address.");
         }
         
-        return grid[x][y] = cell;
+        grid[x][y] = cell;
+
+        setChanged();
+        notifyObservers(grid[x][y]);      
     }
 
     public int getGridVal(int x, int y) {
@@ -155,6 +165,8 @@ public class SudokuGrid {
         }
         
         grid[x][y].setGridValue(grid[x][y].getGridValue(), isDefault);
+        setChanged();
+        notifyObservers(grid[x][y]);
     }
     
     public boolean isDefault(int x, int y) {

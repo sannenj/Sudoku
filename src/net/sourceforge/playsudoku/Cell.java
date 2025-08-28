@@ -94,4 +94,14 @@ public class Cell extends ACell {
 	public boolean isGiven() {
 		return given;
 	}
+	
+    @Override
+    public Cell clone() throws CloneNotSupportedException
+    {
+
+    	Cell cloned = (Cell) super.clone(); 
+        cloned.notes = notes.clone();  // deep copy of notes
+        return cloned;
+    }
+	
 }

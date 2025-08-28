@@ -635,21 +635,18 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void generateNewSud() {
-        boolean b = askSureQuestion("generate new Sudoku?");
-        if(b) {
-            autoCheck = false;
-            setDiffLabelVal(diff);
+        autoCheck = false;
+        setDiffLabelVal(diff);
 
-            cmdHandler.doCommand(
-            		new GenerateGridCommand(sudGenerator, 
-            				                sudGrid, 
-            				                diff, 
-            				                nD));
+        cmdHandler.doCommand(
+        		new GenerateGridCommand(sudGenerator, 
+        				                sudGrid, 
+        				                diff, 
+        				                nD));
 
-            setGridChange(false);
-            //guiGrid.repaint();
-            autoCheck = true;
-        }
+        setGridChange(false);
+        //guiGrid.repaint();
+        autoCheck = true;
     }
     
     private void setDiffLabelVal(int diff) {
@@ -662,11 +659,15 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     }
     
     private void doUndo() {
+        autoCheck = false;
     	cmdHandler.undo();
+        autoCheck = true;
     }
     
     private void doRedo() {
+        autoCheck = false;
     	cmdHandler.redo();
+        autoCheck = true;
     }
     
     private void doNewDesign() {

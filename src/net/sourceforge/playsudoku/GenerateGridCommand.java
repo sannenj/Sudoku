@@ -33,11 +33,7 @@ public class GenerateGridCommand extends Command {
 	@Override
 	public void reverseExecute() {
 		sudGrid.assign(oldGrid);
-		
-		// Hack to force gui update of new grid.
-		//sudGrid.clearNonDefaultCells();
 	}
 
-	
 	
 }
