@@ -8,6 +8,7 @@ public class Cell extends ACell {
 	private boolean[] notes;
 	private boolean editable;
 	private boolean given;
+	private boolean valid;
 	private int range;
 	
 	Cell(int x_, int y_, int range_)
@@ -15,7 +16,7 @@ public class Cell extends ACell {
         x = x_;
         y = y_;
 		range = range_;
-        
+		valid = false;
         reset();
 	}
 	
@@ -33,8 +34,9 @@ public class Cell extends ACell {
 	{
 		removeNotes();
 		
-		puzzleValue = 0;
-		gridValue = 0;
+		puzzleValue = -1;
+		valid = false;
+		// gridValue = 0; Do not reset the grid value!
         editable = true;
         given = false;
 	}
@@ -47,6 +49,7 @@ public class Cell extends ACell {
 	@Override
 	public void setPuzzleValue(int val) {
 		puzzleValue = val;
+		valid = ((puzzleValue >= 0) && (puzzleValue < range));
 	}
 
 	@Override
@@ -60,6 +63,8 @@ public class Cell extends ACell {
 		given = isGiven;
 		if (isGiven)
 		{
+			puzzleValue = gridValue;
+			valid = true;
 			editable = false;
 		}
 	}
@@ -72,7 +77,7 @@ public class Cell extends ACell {
 	@Override
 	public void removeNotes()
 	{
-		notes = new boolean[range];
+		notes = new boolean[range + 1];
 	}
 	
 	@Override
@@ -94,7 +99,12 @@ public class Cell extends ACell {
 	public boolean isGiven() {
 		return given;
 	}
-	
+
+	@Override
+	public boolean isValid() {
+		return valid;
+	}
+
     @Override
     public Cell clone() throws CloneNotSupportedException
     {

@@ -11,11 +11,11 @@ public class GeneratorMove {
     private int[] availabeMoves;
     private Random r;
     
-    protected GeneratorMove(int x, int y, int[] availabeMoves, int valIndex) {
+    protected GeneratorMove(int x, int y, int[] availabeMoves) {
         this.y = y;
         this.x = x;
         this.availabeMoves = availabeMoves;
-        this.valIndex = valIndex;
+        this.valIndex = 0;
         r = new Random();
     }
     
@@ -57,6 +57,10 @@ public class GeneratorMove {
         sb.append(y);
         sb.append("; val: ");
         sb.append(getVal());
+        sb.append("; al: ");
+        sb.append(availabeMoves.length);
+        sb.append("; i: ");
+        sb.append(valIndex);
         sb.append("]");
         return sb.toString();
     }

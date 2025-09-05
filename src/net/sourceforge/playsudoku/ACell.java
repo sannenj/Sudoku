@@ -18,6 +18,7 @@ public abstract class ACell implements Cloneable {
 	public abstract void setEditable(boolean editable);
 	
 	public abstract boolean isGiven();
+	public abstract boolean isValid();
 	
    @Override
    public ACell clone() throws CloneNotSupportedException

@@ -34,16 +34,16 @@ public class GV {
     
     public static final Color GRID_COLOR_1_SELC = new Color(160,220,110);
 
-    public static final Dimension DIM_RA = new Dimension(3, 1);
+    public static final Dimension DIM_RA = new Dimension(1, 1);
 
     public static final String IMG_FOLDER = "/res/img/";
     
     //SudokuGui Vars
-    public final static Font FONT_BIG = new Font("Tahoma", Font.BOLD, 32);
+    public final static Font FONT_BIG = new Font("Tahoma", Font.BOLD, 28);
     
-    public final static int FONT_BIG_H = 15;
+    public final static int FONT_BIG_H = 12;
     
-    public final static int FONT_BIG_W = 37;
+    public final static int FONT_BIG_W = 30;
     
     public final static Font FONT_S = new Font("Tahoma", Font.BOLD, 11);
     
@@ -66,11 +66,11 @@ public class GV {
     
     public static enum NumberEntry {sctn, sntc};
     
-    public final static int DIFF_EASY = 34;
+    public final static int DIFF_EASY = 130;
     public final static int DIFF_NORMAL = 30;
-    public static final int DIFF_HARD = 26;
+    public static final int DIFF_HARD = 10;
     
-    public enum NumDistributuon {evenlyDistributedNumbers, evenlyFilled3x3Square3, random};
+    public enum NumDistributuon {evenlyDistributedNumbers, evenlyFilledSquare, random};
     
     public final static String ERROR_LOAD= "Sudoku could not be loaded!";
     
