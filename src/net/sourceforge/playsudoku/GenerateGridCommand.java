@@ -4,23 +4,26 @@ import net.sourceforge.playsudoku.GV.NumDistributuon;
 
 public class GenerateGridCommand extends Command {
 
-	private SudokuGenerator sudGenerator;
+	private SudokuGridGenerator sudGenerator;
 	private SudokuGrid sudGrid;
 	private SudokuGrid oldGrid;
 	private int openFields; 
 	private NumDistributuon nD;
 	
-	public GenerateGridCommand(SudokuGenerator generator, SudokuGrid grid, int of, NumDistributuon nd)
+	public GenerateGridCommand(SudokuGridGenerator generator, int of, NumDistributuon nd)
 	{
-		sudGrid = grid;
-		oldGrid = new SudokuGrid(grid);
+		// Generate a new one
 		sudGenerator = generator;
+		sudGrid = sudGenerator.getGrid();
 		openFields = of;
 		nD = nd;
 	}
 	
 	@Override
 	public void execute() {
+		// Clone the current before modification grid and save it in old.
+    	oldGrid = new SudokuGrid(sudGrid);
+		
         sudGrid.resetGrid();
         sudGenerator.generatePuzzle(openFields, nD);		
 	}

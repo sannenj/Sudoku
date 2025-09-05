@@ -2,5 +2,6 @@ package net.sourceforge.playsudoku;
 
 public abstract class GridBuilder 
 {
-	public abstract Cell[][] CreateGrid(); 
+	public abstract ACell[][] CreateGrid(); 
+	public abstract int getSize();
 }

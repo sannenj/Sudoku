@@ -255,7 +255,7 @@ public class SudokuGuiGrid extends JPanel implements SudokuObserver {
     public SudokuGuiGrid (SudokuGrid grid, CommandHandler cmdHandler) {
         this.commandHandler = cmdHandler;
     	this.sgrid = grid;
-        this.dimCell = new Dimension(52, 52);
+        this.dimCell = new Dimension(40, 40);
         //this.uRS = uRS;
         
         gridDimension = sgrid.getDimension();

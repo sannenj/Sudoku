@@ -12,17 +12,21 @@ public class SquareGridBuilder extends GridBuilder {
 	}
 	
 	@Override
-	public Cell[][] CreateGrid() {
-		IntegerCell[][] grid = new IntegerCell[dimension][dimension];
-        int val = -1;
+	public ACell[][] CreateGrid() {
+		Cell[][] grid = new Cell[dimension][dimension];
         
-        for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < dimension; j++) {
-                grid[j][i] = new IntegerCell(val, j, i);
+        for (int y = 0; y < dimension; y++) {
+            for (int x = 0; x < dimension; x++) {
+                grid[x][y] = new Cell(x, y, dimension);
             }
         }
         
 		return grid;
 	}
 
+	@Override
+	public int getSize() {
+		return size;
+	}
+	
 }

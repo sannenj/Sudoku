@@ -13,23 +13,18 @@ public class SudokuGrid {
     private ArrayList<SudokuObserver> observers;
     private boolean hasChanged;
     private int dimension;
-    private boolean[][] vertical;
-    private boolean[][] horizontal;
-    private boolean[][] square;
+    private int size;
     
     private Random r;
     
     public SudokuGrid (GridBuilder gb) {
     	
         grid = gb.CreateGrid();
+        size = gb.getSize();
         dimension = grid.length;
         	
-        observers = new ArrayList<SudokuObserver>(4);
+        observers = new ArrayList<SudokuObserver>(3);
         hasChanged = false;
-        
-        vertical = new int[dimension];
-        horizontal = new int[dimension];
-        square = new int[dimension];
         
         this.r = new Random();
     }
@@ -38,43 +33,27 @@ public class SudokuGrid {
     	this.assign(another);
     }
     
+    public int getSize() {
+    	return size;
+    }
+
     public void assign (SudokuGrid another) {
       
-        observers = new ArrayList<SudokuObserver>();
-       	observers.addAll(another.observers);
-        
-        hasChanged = another.hasChanged;
-        
-        vertical = new boolean[9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-            	vertical[i][j] = another.vertical[i][j];
-            }
-        }        
-
-        horizontal = new boolean[9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-            	horizontal[i][j] = another.horizontal[i][j];
-            }
-        }        
-
-        square = new boolean[9][9];
-        for (int i = 0; i < 9; i++) {
-            for (int j = 0; j < 9; j++) {
-            	square[i][j] = another.square[i][j];
-            }
-        }        
-
+       	this.dimension = another.dimension;
+       	this.size = another.size;
+        this.hasChanged = another.hasChanged;
         this.r = another.r;
+
+        this.observers = new ArrayList<SudokuObserver>();
+        this.observers.addAll(another.observers);
         
-        grid = new Cell[9][9];
-        for (int i = 0; i < 9; i++) 
+        grid = new Cell[dimension][dimension];
+        for (int i = 0; i < dimension; i++) 
         {
-            for (int j = 0; j < 9; j++) 
+            for (int j = 0; j < dimension; j++) 
             {
                 try {
-					grid[j][i] = another.grid[j][i].clone();
+                	grid[j][i] = another.grid[j][i].clone();
 				} catch (CloneNotSupportedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -82,9 +61,9 @@ public class SudokuGrid {
             }
         } 
 
-        for (int i = 0; i < 9; i++) 
+        for (int i = 0; i < dimension; i++) 
         {
-            for (int j = 0; j < 9; j++) 
+            for (int j = 0; j < dimension; j++) 
             {
         		setChanged();   
                 notifyObservers(grid[j][i]);
@@ -95,7 +74,13 @@ public class SudokuGrid {
     
     
     public ACell getCell(int x, int y) {
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
+        if((y < 0) || (y >= dimension) || (x < 0) || (x >= dimension)) {
+            throw new IllegalArgumentException("Invalid cell address.");
+        }
+        
+        return grid[x][y];
+    }
+    
     public int getDimension()
     {
     	return dimension;
@@ -108,18 +93,10 @@ public class SudokuGrid {
         }
     }
     
-    public int getRealGridVal(int x, int y) {
-    	checkCoords(x, y);
-        
-        return grid[x][y].getValue();
-    }
-
     public void setCell(ACell cell) {
     	int x = cell.getX();
     	int y = cell.getY();
-        if((y < 0) || (y > 8) || (x < 0) || (x > 8)) {
-            throw new IllegalArgumentException("Invalid cell address.");
-        }
+    	checkCoords(x, y);
         
         grid[x][y] = cell;
 
@@ -200,13 +177,6 @@ public class SudokuGrid {
         }
         
         grid[x][y].setPuzzleValue(val);
-        else
-        {
-        	tmp |= (val << 4);
-        	tmp &= ~IntegerCell.MASK_IS_DELETED;        
-        }
-        
-        grid[x][y].setValue(tmp);
         
         setChanged();
         notifyObservers(grid[x][y]);
@@ -214,7 +184,6 @@ public class SudokuGrid {
     
     public void setEditable(int x, int y, boolean b) {
         grid[x][y].setEditable(b);
-    	grid[x][y].setValue(tmp);
     	
         setChanged();
         notifyObservers(grid[x][y]);
@@ -276,164 +245,22 @@ public class SudokuGrid {
             }
         }
     }
-    
-    public boolean isGridValid() {
-        return checkGrid(false, false, false);
-    }
-    
-    public boolean isGridSolved() {
-        return checkGrid(true, false, false);
-    }
 
     public boolean isPuzzleSolved() {
         
-        return checkGrid(true, false, true);
+        return checkGrid();
     }
     
-    public boolean isPuzzleValid() {
-        return checkGrid(false, false, true);
-    }
-    
-    private boolean checkGrid(boolean toBeSolvedToo, boolean usedForFindAvMoves, boolean checkPuzzle) {
-        int m = 0 , n = 0;
-        
-        //reset Arrays
+    private boolean checkGrid() {
         for (int i = 0; i < dimension; i++) {
-            for (int j = 0; j < 9; j++) {
-            	vertical[i][j] = horizontal[i][j] = square[i][j] = false;
+            for (int j = 0; j < dimension; j++) {
+                if (getGridVal(j,i) != getPuzzleVal(j,i)) return false;
             }
         }
-        
-        int gridSize = (int) Math.round(Math.sqrt(dimension));
-        
-        for(int i = 0; i < dimension; i++) {
-            for(int j = 0; j < dimension; j++) {
-                int trueVal1 = -1;
-                int trueVal2 = -1;
-                if(checkPuzzle) {
-                    trueVal1 = getVal(j,i);
-                    trueVal2 = getVal(i,j);
-                } else {
-                    trueVal1 = getGridVal(j,i);
-                    trueVal2 = getGridVal(i,j);
-                }
 
-                //Square adr in n
-                m = j / gridSize;
-                n = i / gridSize;
-                n = gridSize * m + n;
-                
-                int k1 = 0, k2 = 0;
-                if(trueVal1 != 0) {
-                    k1 = trueVal1 - 1;
-                    
-                    if((horizontal[i][k1] || square[n][k1]) &&
-                       !usedForFindAvMoves) 
-                    {
-                        return false;
-                    }
-
-                    square[n][k1] = true; 
-                    horizontal[i][k1] = true; 
-                }
-                
-                if(trueVal2 != 0) {
-                    k2 =  trueVal2 - 1;
-                    
-                    if(vertical[i][k2] &&
-                       !usedForFindAvMoves) 
-                    {
-                        return false;
-                    }
-                    
-                    vertical[i][k2] = true; 
-                } 
-            }
-        }
-        
-        if(toBeSolvedToo) {
-        	int checkmask = 0;
-        	for (int k = 0; k < dimension; k++) {
-               checkmask |= 1 << k;
-        	}
-        	
-            for (int k = 0; k < dimension; k++) {
-                if(vertical[k] == checkmask && 
-                   horizontal[k] == checkmask && 
-                   square[k] == checkmask) {
-                    continue;
-                } else {
-                    return false;
-                }
-            }
-        } 
         return true; 
     }
     
-    public int[] getAvailabeValuesField(int x, int y, boolean sortIt) {
-        checkCoords(x, y);
-        
-        checkGrid(false, true, false);
-        
-        int gridSize = (int) Math.round(Math.sqrt(dimension));
-
-        int n = gridSize*(x/gridSize)+(y/gridSize);
-
-        int k = 0;
-        boolean[] b = new boolean[dimension];
-        
-        for(int i = 0; i < dimension; i++) {
-            
-            if( (vertical[x][i] == false) && 
-                (horizontal[y][i] == false) && 
-                (square[n][i] == false) ) 
-            {
-                b[i] = true;
-                k++;
-            }
-        }
-
-        int[] result = new int[k];
-        
-        //SORT RESULT
-        k = 0;
-        for(int i = 0; i < dimension; i++) {
-            if(b[i]) {
-                result[k] = i;
-                k++;
-            }
-        }
-        b = null;
-        if(!sortIt) {
-            randomizeArray(result);
-        }
-        return result;
-    }
-    
-    protected GeneratorMove getFirstMove() {
-        return getNextMove(-1,0);
-    }
-    
-    protected GeneratorMove getNextMove(int x, int y) {
-        do { //No default Fields
-            if((x+1) >= dimension) { //y mod dimension;
-                if((y+1) >= dimension) {
-                    return null;
-                }
-                x = 0;
-                y += 1;
-            } else {
-                x += 1;
-            }
-        } while(isDefault(x,y));
-
-        int[] moves = getAvailabeValuesField(x,y, false);
-        if(moves.length > 0) {
-            return new GeneratorMove(x,y,moves);
-        }
-        return null;
-    }
-
     //OBSERVERS MANEGMANT
     public void addObserver(SudokuObserver so) {
         observers.add(so);
@@ -482,16 +309,6 @@ public class SudokuGrid {
 //        }
 //    }
     
-    private void randomizeArray(int[] a) {
-        int tmp = 0; int rV = 0;
-        for(int i = 0; i < a.length; i++) {
-            rV = r.nextInt(a.length-i);
-            tmp = a[a.length-i-1];
-            a[a.length-i-1] = a[rV];
-            a[rV] = tmp;
-        }
-    }
-
     public String toString() {
         StringBuffer sb = new StringBuffer(200);
         for(int i = 0; i < dimension; i++) {

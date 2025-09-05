@@ -53,7 +53,7 @@ import net.sourceforge.playsudoku.GV;
 import net.sourceforge.playsudoku.GenerateGridCommand;
 import net.sourceforge.playsudoku.Observer;
 import net.sourceforge.playsudoku.SudokuGrid;
-import net.sourceforge.playsudoku.SudokuGenerator;
+import net.sourceforge.playsudoku.SudokuGridGenerator;
 import net.sourceforge.playsudoku.SudokuObserver;
 //import net.sourceforge.playsudoku.UndoRedoStack;
 import net.sourceforge.playsudoku.GV.NumDistributuon;
@@ -129,7 +129,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     
     private int diff;
     private NumDistributuon nD;
-    private SudokuGenerator sudGenerator;
+    private SudokuGridGenerator sudGenerator;
     private boolean hasTheGridBeenChanged;
     private boolean autoCheck;
     
@@ -156,7 +156,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         cmdHandlerObs = new CommandHandlerObserver();
         cmdHandler = new CommandHandler(cmdHandlerObs);
         
-        sudGenerator = new SudokuGenerator();
+        sudGenerator = new SudokuGridGenerator();
         sudGrid = sudGenerator.getGrid();
         diff = GV.DIFF_NORMAL;
         nD = NumDistributuon.evenlyFilledSquare;
@@ -658,7 +658,6 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
 
         cmdHandler.doCommand(
         		new GenerateGridCommand(sudGenerator, 
-        				                sudGrid, 
         				                diff, 
         				                nD));
 
