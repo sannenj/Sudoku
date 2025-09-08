@@ -127,7 +127,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     private CommandHandlerObserver cmdHandlerObs;   
     private CommandHandler cmdHandler;
     
-    private int diff;
+    private GV.Difficulty diff;
     private NumDistributuon nD;
     private SudokuGridGenerator sudGenerator;
     private boolean hasTheGridBeenChanged;
@@ -158,7 +158,7 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         
         sudGenerator = new SudokuGridGenerator();
         sudGrid = sudGenerator.getGrid();
-        diff = GV.DIFF_NORMAL;
+        diff = GV.Difficulty.DIFF_NORMAL;
         nD = NumDistributuon.evenlyFilledSquare;
         
         //uRS = new UndoRedoStack(100);
@@ -628,25 +628,6 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         } 
     }
 
-    private void doCustomDiff() {
-        String s = JOptionPane.showInputDialog(this,
-                "Enter a number between 1 and 81",
-                "Custom Difficulty",
-                JOptionPane.PLAIN_MESSAGE);
-        if(s != null) {
-            try {
-                int i = Integer.parseInt(s.trim());
-                if(i >= 1 && i <= 81) {
-                    diff = i;
-                    return;
-                }
-            } catch (Exception e) {}
-            JOptionPane.showMessageDialog(this,"Invalid Number!\nEnter a number between 1 and 81", "Error", 
-                    JOptionPane.ERROR_MESSAGE);
-            doCustomDiff();
-        }
-    }
-
     private void doAbout() {
         JOptionPane.showMessageDialog(this,GV.ABOUT, 
                 "About", JOptionPane.INFORMATION_MESSAGE);
@@ -655,10 +636,10 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
     private void generateNewSud() {
         autoCheck = false;
         setDiffLabelVal(diff);
-
+        
         cmdHandler.doCommand(
         		new GenerateGridCommand(sudGenerator, 
-        				                diff, 
+        				                sudGrid.getClues(diff), 
         				                nD));
 
         setGridChange(false);
@@ -666,11 +647,11 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
         autoCheck = true;
     }
     
-    private void setDiffLabelVal(int diff) {
+    private void setDiffLabelVal(GV.Difficulty diff) {
         switch(diff) {
-        case GV.DIFF_EASY : jTextDiff.setText("Easy"); break;
-        case GV.DIFF_NORMAL : jTextDiff.setText("Normal"); break;
-        case GV.DIFF_HARD : jTextDiff.setText("Hard"); break;
+        case DIFF_EASY : jTextDiff.setText("Easy"); break;
+        case DIFF_NORMAL : jTextDiff.setText("Normal"); break;
+        case DIFF_HARD : jTextDiff.setText("Hard"); break;
         default : jTextDiff.setText("Custom");
         }
     }
@@ -952,13 +933,11 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
                 }  else if (tmp == sudSaveAs) {
                     doSave();
                 } else if (tmp == opDiffEasy) {
-                    diff = GV.DIFF_EASY;
+                    diff = GV.Difficulty.DIFF_EASY;
                 } else if (tmp == opDiffNormal) {
-                    diff = GV.DIFF_NORMAL;
+                    diff = GV.Difficulty.DIFF_NORMAL;
                 } else if (tmp == opDiffHard) {
-                    diff = GV.DIFF_HARD;
-                } else if (tmp == opDiffCustom){
-                    doCustomDiff();
+                    diff = GV.Difficulty.DIFF_HARD;
                 } else if (tmp == opND1){
                     nD = NumDistributuon.evenlyFilledSquare;
                 } else if (tmp == opND2){

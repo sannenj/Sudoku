@@ -66,9 +66,7 @@ public class GV {
     
     public static enum NumberEntry {sctn, sntc};
     
-    public final static int DIFF_EASY = 130;
-    public final static int DIFF_NORMAL = 30;
-    public static final int DIFF_HARD = 10;
+    public enum Difficulty{DIFF_EASY, DIFF_NORMAL, DIFF_HARD};
     
     public enum NumDistributuon {evenlyDistributedNumbers, evenlyFilledSquare, random};
     

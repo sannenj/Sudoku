@@ -9,7 +9,8 @@ public class SudokuGridGenerator {
     private SudokuGrid grid;
     
     public SudokuGridGenerator() {
-        this(new SudokuGrid(new SquareGridBuilder(3)));
+//        this(new SudokuGrid(new SquareGridBuilder(3), new NineByNineLevelStrategy()));
+        this(new SudokuGrid(new SquareGridBuilder(4), new SixteenBySixteenLevelStrategy()));
     } 
     
     public SudokuGridGenerator(SudokuGrid grid) {

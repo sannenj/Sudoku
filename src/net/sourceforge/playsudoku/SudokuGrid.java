@@ -14,14 +14,16 @@ public class SudokuGrid {
     private boolean hasChanged;
     private int dimension;
     private int size;
+    private LevelStrategy levels;
     
     private Random r;
     
-    public SudokuGrid (GridBuilder gb) {
+    public SudokuGrid (GridBuilder gb, LevelStrategy levels) {
     	
-        grid = gb.CreateGrid();
-        size = gb.getSize();
-        dimension = grid.length;
+        this.grid = gb.CreateGrid();
+        this.size = gb.getSize();
+        this.dimension = grid.length;
+        this.levels = levels;
         	
         observers = new ArrayList<SudokuObserver>(3);
         hasChanged = false;
@@ -318,5 +320,16 @@ public class SudokuGrid {
             sb.append("|\n");
         }
         return sb.toString();
-    }   
+    }
+
+	public int getClues(GV.Difficulty diff) {
+		
+        switch(diff) {
+        case DIFF_EASY : return levels.getEasyLevel(); 
+        case DIFF_NORMAL : return levels.getMediumLevel(); 
+        case DIFF_HARD : return levels.getHardLevel();         
+        }
+		
+		return 200;
+	}   
 }
