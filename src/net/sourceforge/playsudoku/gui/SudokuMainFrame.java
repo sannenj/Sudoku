@@ -313,41 +313,6 @@ public class SudokuMainFrame extends JFrame implements SudokuObserver {
                 mOptions.add(opDiffHard);
                 bGr1.add(opDiffHard);
                 
-                opDiffCustom = new JRadioButtonMenuItem("Custom...");
-                mOptions.add(opDiffCustom);
-                opDiffCustom.addActionListener(mH);
-                opDiffCustom.setMnemonic('C');
-                bGr1.add(opDiffCustom);
-                
-                mOptions.addSeparator();
-                
-                JLabel jl2 = new JLabel("<HTML>  &#032&#032<U>Number Distribution :</U><HTML>");
-                jl2.setHorizontalAlignment(JLabel.LEFT);
-                jl2.setHorizontalTextPosition(JLabel.LEFT);
-                mOptions.add(jl2);
-                
-                ButtonGroup bGr2 = new ButtonGroup();
-                
-                opND1 = new JRadioButtonMenuItem("Evenly filled 3x3 Squares", true);
-                opND1.addActionListener(mH);
-                opND1.setMnemonic('F');
-                mOptions.add(opND1);
-                bGr2.add(opND1);
-                
-                opND2 = new JRadioButtonMenuItem("Evenly distributed Numbers");
-                opND2.addActionListener(mH);
-                opND2.setMnemonic('D');
-                mOptions.add(opND2);
-                bGr2.add(opND2);
-                
-                opND3 = new JRadioButtonMenuItem("Random");
-                opND3.addActionListener(mH);
-                opND3.setMnemonic('R');
-                mOptions.add(opND3);
-                bGr2.add(opND3);
-                
-                mOptions.addSeparator();
-                
                 ButtonGroup bGr3 = new ButtonGroup();
                 
                 {
